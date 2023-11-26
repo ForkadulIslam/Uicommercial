@@ -30,10 +30,6 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-Authcontroller.get('/api', (req, res) =>{
-  res.json('Wellcome...');
-});
-
 Authcontroller.post('/api/login', async (req, res) => {
     const { email, password } = req.body;
     try {
@@ -70,7 +66,7 @@ Authcontroller.post('/api/login', async (req, res) => {
     }
 });
 
-Authcontroller.post('/api/registration', upload.single('image'), async (req, res) => {
+Authcontroller.post('/api/registration', async (req, res) => {
   try {
     const {
       first_name,
@@ -106,7 +102,6 @@ Authcontroller.post('/api/registration', upload.single('image'), async (req, res
       email,
       gender,
       password,
-      image,
     });
 
     // Exclude the password hash from the response
@@ -145,8 +140,6 @@ Authcontroller.get('/api/get_user', Auth,async (req, res) => {
   }
   
 });
-
-
 
 Authcontroller.get('/api/my_timeline', Auth,async (req, res) => {
   const user_id = extractUserId(req);

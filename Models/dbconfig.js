@@ -3,10 +3,10 @@ const { Sequelize } = require("sequelize");
 const sequelize = new Sequelize({
   dialect: "mysql",
   host: "localhost",
-  port: 3306,
-  username: "uicommercial",
-  password: "Uicom@123",
-  database: "uicommercial_db",
+  port: 8889,
+  username: "root",
+  password: "root",
+  database: "ui_commercial",
 });
 
 module.exports = sequelize;

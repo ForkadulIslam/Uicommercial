@@ -91,11 +91,12 @@ const User = sequelize.define('User', {
   },
   image: {
     type: DataTypes.STRING,
-    validate: {
-      notEmpty: {
-        msg: 'Image is required',
-      },
-    },
+    allowNull: true,
+    // validate: {
+    //   notEmpty: {
+    //     msg: 'Image is required',
+    //   },
+    // },
   },
 }, 
 {
