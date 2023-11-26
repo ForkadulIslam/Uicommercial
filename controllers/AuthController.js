@@ -30,6 +30,10 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
+Authcontroller.get('/api', (req, res) =>{
+  res.json('Wellcome...');
+});
+
 Authcontroller.post('/api/login', async (req, res) => {
     const { email, password } = req.body;
     try {

@@ -14,4 +14,4 @@ app.use(cors());
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
 app.use(Authcontroller);
-app.listen(3001, function () { console.log('Example app listening on port 3001!'); });
+app.listen(3000, function () { console.log('Example app listening on port 3000!'); });
