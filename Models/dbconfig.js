@@ -8,5 +8,4 @@ const sequelize = new Sequelize({
   password: "root",
   database: "ui_commercial",
 });
-
 module.exports = sequelize;

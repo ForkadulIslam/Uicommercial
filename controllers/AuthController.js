@@ -1,9 +1,9 @@
 const express = require('express');
 
 const User = require('../Models/User');
-const UserFollower = require('../Models/UserFollower');
-const Murmur = require('../Models/Murmur');
-const MurmurLike = require('../Models/MurmurLike')
+// const UserFollower = require('../Models/UserFollower');
+// const Murmur = require('../Models/Murmur');
+// const MurmurLike = require('../Models/MurmurLike')
 require('./../Models/associations');
 
 const bcript = require('bcrypt');

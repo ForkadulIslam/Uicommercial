@@ -1,7 +1,7 @@
 const User = require('./User');
-const UserFollower = require('./UserFollower');
-const MurmurLike = require('./MurmurLike');
-const Murmur = require('./Murmur');
+// const UserFollower = require('./UserFollower');
+// const MurmurLike = require('./MurmurLike');
+// const Murmur = require('./Murmur');
 
 // User.hasMany(UserFollower, { foreignKey: 'user_id', sourceKey: 'id' });
 // UserFollower.belongsTo(User, { foreignKey: 'user_id', targetKey: 'id' });

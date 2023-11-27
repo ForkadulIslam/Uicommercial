@@ -20,6 +20,7 @@ Murmur.init(
   },
   {
     sequelize,
+    tableName:'murmurs',
     modelName: 'Murmur',
     timestamps: true,
     createdAt: 'created_at',
