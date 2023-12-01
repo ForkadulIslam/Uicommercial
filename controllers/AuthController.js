@@ -2,6 +2,10 @@ const express = require('express');
 
 const User = require('../Models/User');
 const Buyer = require('../Models/Buyer');
+const Service = require('../Models/Service');
+const Process = require('../Models/Process');
+const Service_rate = require('../Models/Service_rate');
+const Service_taken_by_user = require('../Models/Service_taken_by_user');
 // const UserFollower = require('../Models/UserFollower');
 // const Murmur = require('../Models/Murmur');
 // const MurmurLike = require('../Models/MurmurLike')
@@ -201,6 +205,348 @@ Authcontroller.get('/api/buyers', async (req, res) => {
 
         return res.status(200).json(responseBuyers);
     } catch (error) {
+        // Handle other errors
+        console.error(error);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+Authcontroller.post('/api/create_service', Auth, async (req, res) => {
+    try {
+        //res.json('Test');return;
+        // Extract data from the request body
+        const { name, caption, service_type, is_active, remarks } = req.body;
+
+        // Create a new Service
+        const newService = await Service.create({
+            name,
+            caption,
+            service_type,
+            is_active,
+            remarks,
+        });
+
+        // Exclude sensitive information from the response
+        const responseService = {
+            ...newService.toJSON(),
+            // Add any other fields you want to exclude
+        };
+
+        return res.status(201).json(responseService);
+    } catch (error) {
+        // Handle Sequelize validation errors
+        if (error.name === 'SequelizeValidationError') {
+            const validationErrors = error.errors.map(err => ({
+                field: err.path,
+                message: err.message,
+            }));
+            return res.status(400).json({ error: 'Validation Error', validationErrors });
+        }
+
+        // Handle other errors
+        console.error(error);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+Authcontroller.get('/api/services', Auth,async (req, res) => {
+    try {
+        // Find all services excluding the timestamp column
+        const services = await Service.findAll({
+            attributes: { exclude: ['created_at', 'updated_at'] },
+        });
+
+        return res.status(200).json(services);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+Authcontroller.put('/api/service/:id', Auth, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, caption, service_type, is_active, remarks } = req.body;
+
+        // Find the service by ID
+        const serviceToUpdate = await Service.findByPk(id);
+
+        if (!serviceToUpdate) {
+            return res.status(404).json({ error: 'Service not found' });
+        }
+
+        // Update the service attributes
+        serviceToUpdate.name = name;
+        serviceToUpdate.caption = caption;
+        serviceToUpdate.service_type = service_type;
+        serviceToUpdate.is_active = is_active;
+        serviceToUpdate.remarks = remarks;
+
+        try {
+            // Save the updated service
+            await serviceToUpdate.save();
+
+            // Return the updated service
+            return res.status(200).json(serviceToUpdate);
+        } catch (validationError) {
+            // Handle Sequelize validation errors
+            if (validationError.name === 'SequelizeValidationError') {
+                const validationErrors = validationError.errors.map(err => ({
+                    field: err.path,
+                    message: err.message,
+                }));
+                return res.status(400).json({ error: 'Validation Error', validationErrors });
+            }
+
+            // Handle other errors
+            console.error(validationError);
+            return res.status(500).json({ error: 'Internal Server Error' });
+        }
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+Authcontroller.post('/api/process_create', Auth, async (req, res) => {
+    try {
+        const { service_id, name, domain_link, default_quantity, is_active, remarks } = req.body;
+
+        // Create a new process
+        const newProcess = await Process.create({
+            service_id,
+            name,
+            domain_link,
+            default_quantity,
+            is_active,
+            remarks,
+        });
+
+        // Exclude sensitive information from the response
+        const responseProcess = {
+            ...newProcess.toJSON(),
+            // Add any other fields you want to exclude
+        };
+
+        return res.status(201).json(responseProcess);
+    } catch (error) {
+        // Handle Sequelize validation errors
+        if (error.name === 'SequelizeValidationError') {
+            const validationErrors = error.errors.map(err => ({
+                field: err.path,
+                message: err.message,
+            }));
+            return res.status(400).json({ error: 'Validation Error', validationErrors });
+        }
+
+        // Handle other errors
+        console.error(error);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+Authcontroller.put('/api/process/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { service_id, name, domain_link, default_quantity, is_active, remarks } = req.body;
+
+        // Find the process by ID
+        const processToUpdate = await Process.findByPk(id);
+
+        if (!processToUpdate) {
+            return res.status(404).json({ error: 'Process not found' });
+        }
+
+        // Update the process attributes
+        processToUpdate.service_id = service_id;
+        processToUpdate.name = name;
+        processToUpdate.domain_link = domain_link;
+        processToUpdate.default_quantity = default_quantity;
+        processToUpdate.is_active = is_active;
+        processToUpdate.remarks = remarks;
+
+        // Save the updated process
+        await processToUpdate.save();
+
+        // Return the updated process
+        return res.status(200).json(processToUpdate);
+    } catch (error) {
+        // Handle Sequelize validation errors
+        if (error.name === 'SequelizeValidationError') {
+            const validationErrors = error.errors.map(err => ({
+                field: err.path,
+                message: err.message,
+            }));
+            return res.status(400).json({ error: 'Validation Error', validationErrors });
+        }
+
+        // Handle other errors
+        console.error(error);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+// Route to get all processes
+Authcontroller.get('/api/processes', async (req, res) => {
+    try {
+        // Retrieve all processes from the database
+        const allProcesses = await Process.findAll();
+
+        // Return the list of processes
+        return res.status(200).json(allProcesses);
+    } catch (error) {
+        // Handle other errors
+        console.error(error);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+// Route to create a new service rate
+Authcontroller.post('/api/create_service_rate', async (req, res) => {
+    try {
+        const {
+            service_id,
+            buyer_id,
+            process_id,
+            effective_date,
+            process_price,
+            extended_price,
+        } = req.body;
+
+        // Create a new service rate
+        const newServiceRate = await Service_rate.create({
+            service_id,
+            buyer_id,
+            process_id,
+            effective_date,
+            process_price,
+            extended_price,
+        });
+
+        // Exclude sensitive information from the response
+        const responseServiceRate = {
+            ...newServiceRate.toJSON(),
+            // Add any other fields you want to exclude
+        };
+
+        return res.status(201).json(responseServiceRate);
+    } catch (error) {
+        // Handle Sequelize validation errors
+        if (error.name === 'SequelizeValidationError') {
+            const validationErrors = error.errors.map(err => ({
+                field: err.path,
+                message: err.message,
+            }));
+            return res.status(400).json({ error: 'Validation Error', validationErrors });
+        }
+
+        // Handle other errors
+        console.error(error);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+// Route to update a service rate by ID
+Authcontroller.put('/api/services_rates/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const {
+            service_id,
+            buyer_id,
+            process_id,
+            effective_date,
+            process_price,
+            extended_price,
+        } = req.body;
+
+        // Find the service rate by ID
+        const serviceRateToUpdate = await Service_rate.findByPk(id);
+
+        if (!serviceRateToUpdate) {
+            return res.status(404).json({ error: 'Service Rate not found' });
+        }
+
+        // Update the service rate attributes
+        serviceRateToUpdate.service_id = service_id;
+        serviceRateToUpdate.buyer_id = buyer_id;
+        serviceRateToUpdate.process_id = process_id;
+        serviceRateToUpdate.effective_date = effective_date;
+        serviceRateToUpdate.process_price = process_price;
+        serviceRateToUpdate.extended_price = extended_price;
+
+        // Save the updated service rate
+        await serviceRateToUpdate.save();
+
+        // Return the updated service rate
+        return res.status(200).json(serviceRateToUpdate);
+    } catch (error) {
+        // Handle Sequelize validation errors
+        if (error.name === 'SequelizeValidationError') {
+            const validationErrors = error.errors.map(err => ({
+                field: err.path,
+                message: err.message,
+            }));
+            return res.status(400).json({ error: 'Validation Error', validationErrors });
+        }
+
+        // Handle other errors
+        console.error(error);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+// Route to get all service rates with associated data
+Authcontroller.get('/api/service_rates', async (req, res) => {
+    try {
+        const serviceRates = await Service_rate.findAll({
+            include: [
+                { model: Service, as: 'service', attributes: ['name','id'] },
+                { model: Process, as: 'process', attributes: ['name','id'] },
+            ],
+        });
+
+        return res.status(200).json(serviceRates);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+// Route to save a service taken by a user
+Authcontroller.post('/api/service_taken_by_users', async (req, res) => {
+    try {
+        const {
+            user_id,
+            service_id,
+            buyer_id,
+            process_id,
+            period_as_day,
+            rate,
+            total,
+        } = req.body;
+
+        // Create a new Service_taken_by_user
+        const newServiceTakenByUser = await Service_taken_by_user.create({
+            user_id,
+            service_id,
+            buyer_id,
+            process_id,
+            period_as_day,
+            rate,
+            total,
+        });
+
+        // Exclude sensitive information from the response
+        const responseServiceTakenByUser = {
+            ...newServiceTakenByUser.toJSON(),
+        };
+
+        return res.status(201).json(responseServiceTakenByUser);
+    } catch (error) {
+        // Handle Sequelize validation errors
+        if (error.name === 'SequelizeValidationError') {
+            const validationErrors = error.errors.map(err => ({
+                field: err.path,
+                message: err.message,
+            }));
+            return res.status(400).json({ error: 'Validation Error', validationErrors });
+        }
+
         // Handle other errors
         console.error(error);
         return res.status(500).json({ error: 'Internal Server Error' });
